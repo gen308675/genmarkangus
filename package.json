@@ -1,20 +1,35 @@
 {
   "name": "genmarkangus",
   "type": "module",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "astro dev",
+    "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "generate-types": "wrangler types"
+  },
+  "overrides": {
+    "path-to-regexp": "^6.3.0"
   },
   "dependencies": {
-    "astro": "^7.3.7"
+    "@astrojs/cloudflare": "^14.3.4",
+    "@astrojs/vercel": "^11.0.13",
+    "@iconify-json/fa6-brands": "^1.2.6",
+    "@iconify-json/lucide": "^1.2.141",
+    "@iconify-json/simple-icons": "^1.2.99",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.7",
+    "astro-icon": "^1.2.0",
+    "tailwindcss": "^4.3.3",
+    "wrangler": "^4.149.0"
   },
   "allowScripts": {
-    "esbuild": true
+    "esbuild": true,
+    "fsevents@2.3.3": true
   }
 }

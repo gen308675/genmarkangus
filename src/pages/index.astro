@@ -1,16 +1,65 @@
 ---
----
+import BaseLayout from '../components/layout/BaseLayout.astro';
+import GlassCard from '../components/ui/GlassCard.astro';
+import StatusBadge from '../components/ui/StatusBadge.astro';
+import PrimaryButton from '../components/ui/PrimaryButton.astro';
+import PhotoTile from '../components/features/PhotoTile.astro';
+import ContactsTile from '../components/features/ContactsTile.astro';
+import PipelineTile from '../components/features/PipelineTile.astro';
+import ChatTeaserTile from '../components/features/ChatTeaserTile.astro';
+import ProjectsCarouselTile from '../components/features/ProjectsCarouselTile.astro';
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+const booking = import.meta.env.PUBLIC_BOOKING_URL;
+---
+<BaseLayout title="Gen Mark D. Angus | AI Automation Engineer"
+  description="Self-hosted n8n + LLM workflows for inbound leads, voice and support. Secure by default.">
+  
+  <main class="mx-auto grid max-w-[1400px] grid-cols-1 gap-4 px-4 py-6 md:grid-cols-2 lg:auto-rows-[3.25rem] lg:grid-cols-12 lg:py-10">
+    
+    <!-- HERO TILE: Spans 6 rows (0 to 6) to keep padding and button space clean -->
+    <GlassCard class="order-1 min-h-72 p-7 md:col-span-2 lg:order-none lg:col-span-6 lg:col-start-1 lg:row-span-6 lg:row-start-1">
+      <StatusBadge status="online" label="Open to work" />
+      <h1 class="mt-4 text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">Gen Mark D. Angus</h1>
+      <p class="mt-1 text-lg font-medium text-emerald-400">AI Automation Engineer</p>
+      <p class="mt-3 max-w-xl text-sm leading-relaxed text-gray-300">
+        I help e-commerce and service businesses turn inbound leads, calls and support requests
+        into automated, reliable workflows, self-hosted and secure.
+      </p>
+      <p class="mt-2 max-w-xl text-xs text-gray-400">
+        I don't just demo AI, I run it: three workflows live on my own infrastructure, plus a Blue Team SOC lab built during my internship.
+      </p>
+      
+      <div class="mt-5 flex flex-wrap gap-3">
+        <PrimaryButton 
+          href={booking} 
+          event="cta_book_click" 
+          target="_blank"
+        >
+          Book a call
+        </PrimaryButton>
+
+        <PrimaryButton 
+          href="/resume.pdf" 
+          variant="ghost" 
+          event="resume_download" 
+          target="_blank"
+          download="Gen_Mark_Angus_Resume.pdf"
+        >
+          Download resume
+        </PrimaryButton>
+      </div>
+    </GlassCard>
+
+    <!-- PHOTO & CONTACTS: Row 7 to 12 (6 rows each) -->
+    <PhotoTile pop="2.5rem" class="order-2 min-h-[22rem] lg:order-none lg:col-span-3 lg:col-start-1 lg:row-span-6 lg:row-start-7" />
+    <ContactsTile class="order-3 min-h-32 lg:order-none lg:col-span-3 lg:col-start-4 lg:row-span-6 lg:row-start-7" />
+
+    <!-- PIPELINE & CHAT TEASER: Pipeline (7 rows), Chat (5 rows) = Total 12 rows -->
+    <PipelineTile class="order-6 min-h-[22rem] lg:order-none lg:col-span-3 lg:col-start-7 lg:row-span-7 lg:row-start-1" />
+    <ChatTeaserTile class="order-5 lg:order-none lg:col-span-3 lg:col-start-7 lg:row-span-5 lg:row-start-8" />
+    
+    <!-- PROJECTS CAROUSEL: Exactly 12 rows (Row 1 to 12) to match left & middle height perfectly -->
+    <ProjectsCarouselTile class="order-4 min-h-[26rem] md:col-span-2 lg:order-none lg:col-span-3 lg:col-start-10 lg:row-span-12 lg:row-start-1" />
+
+  </main>
+</BaseLayout>

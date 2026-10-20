@@ -1,0 +1,32 @@
+---
+interface Props { 
+  href: string; 
+  event?: string; 
+  variant?: 'primary' | 'ghost';
+  target?: string;
+  rel?: string;
+  download?: string | boolean;
+  [key: string]: any;
+}
+
+const { href, event, variant = 'primary', target, rel, download, ...props } = Astro.props;
+
+// Auto-add secure rel attribute when opening in a new tab
+const computedRel = target === '_blank' ? (rel || 'noopener noreferrer') : rel;
+
+const styles = variant === 'primary'
+  ? 'bg-gradient-to-r from-emerald-300 to-teal-200 text-black font-semibold hover:opacity-90'
+  : 'border border-white/15 text-gray-200 hover:bg-white/10';
+---
+
+<a 
+  href={href} 
+  target={target}
+  rel={computedRel}
+  download={download}
+  data-umami-event={event}
+  class:list={["inline-block rounded-xl px-5 py-2.5 text-sm transition", styles]}
+  {...props}
+>
+  <slot />
+</a>

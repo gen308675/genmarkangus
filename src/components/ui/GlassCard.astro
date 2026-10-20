@@ -1,0 +1,12 @@
+---
+interface Props { class?: string }
+const { class: className = '' } = Astro.props;
+---
+<div class:list={[
+  "rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-[#0a3a27] via-[#07291c] to-[#041a12] p-7 backdrop-blur-md",
+  "shadow-[inset_0_1px_1px_0_rgba(110,231,183,0.25),0_15px_35px_-10px_rgba(0,0,0,0.9)]",
+  "transition-all duration-300 hover:border-emerald-400/50 hover:shadow-[inset_0_1px_1px_0_rgba(110,231,183,0.4),0_20px_40px_-10px_rgba(0,0,0,0.95)]",
+  className,
+]}>
+  <slot />
+</div>

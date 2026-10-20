@@ -1,0 +1,398 @@
+---
+import { Icon } from "astro-icon/components";
+import GlassCard from "../ui/GlassCard.astro";
+
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+
+// Canvas coordinate system (nodes and wires share it)
+const W = 240,
+  H = 262,
+  NW = 108,
+  NH = 40;
+const nodes = [
+  { label: "Webhook", sub: "Trigger", icon: "lucide:webhook", x: 6, y: 4 },
+  {
+    label: "AI Agent",
+    sub: "LLM",
+    icon: "lucide:brain-circuit",
+    x: 126,
+    y: 74,
+  },
+  {
+    label: "Supabase",
+    sub: "Vector DB",
+    icon: "lucide:database",
+    x: 6,
+    y: 144,
+  },
+  { label: "Notify", sub: "Telegram", icon: "lucide:send", x: 126, y: 214 },
+];
+
+// Curved wire from the bottom-center of one node to the top-center of the next
+const wires = nodes.slice(0, -1).map((a, i) => {
+  const b = nodes[i + 1];
+  const x1 = a.x + NW / 2,
+    y1 = a.y + NH;
+  const x2 = b.x + NW / 2,
+    y2 = b.y;
+  const m = (y2 - y1) / 2;
+  return {
+    x1,
+    y1,
+    x2,
+    y2,
+    d: `M${x1} ${y1} C${x1} ${y1 + m}, ${x2} ${y2 - m}, ${x2} ${y2}`,
+  };
+});
+
+const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(2)}%`;
+
+const stats = [
+  { key: "runs", label: "runs" },
+  { key: "success", label: "success" },
+  { key: "latency", label: "avg latency" },
+];
+---
+
+<div
+  class:list={[
+    "relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#f7f7fa] p-6 text-slate-800",
+    "shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]",
+    className,
+  ]}
+>
+  <div class="canvas-dots" aria-hidden="true"></div>
+  <div class="canvas-glow" aria-hidden="true"></div>
+
+  <div
+    data-pipeline
+    data-state="checking"
+    class="group relative z-10 flex min-h-0 flex-1 flex-col"
+  >
+    <div class="flex items-center justify-between">
+      <p class="flex items-center gap-2 text-sm font-medium text-slate-500">
+        <Icon
+          name="simple-icons:n8n"
+          class="h-5 w-5 text-[#ea4b71]"
+          aria-hidden="true"
+        />
+        Live n8n pipeline
+      </p>
+      <span class="inline-flex items-center gap-2 text-xs text-slate-500">
+        <span
+          class="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_8px] shadow-amber-400/60 group-data-[state=online]:bg-emerald-500 group-data-[state=online]:shadow-emerald-500/60 group-data-[state=offline]:bg-red-500 group-data-[state=offline]:shadow-red-500/60"
+        ></span>
+        <span data-status-label>Checking…</span>
+      </span>
+    </div>
+
+    <div
+      class="my-2 flex min-h-64 flex-1 items-center justify-center lg:min-h-0"
+      style="container-type:size"
+    >
+      <div
+        class="relative"
+        role="img"
+        aria-label="Animated automation workflow: webhook, AI agent, Supabase, notification"
+        style={`aspect-ratio:${W}/${H};width:min(100cqw, calc(100cqh * ${W} / ${H}))`}
+      >
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          class="absolute inset-0 h-full w-full"
+          aria-hidden="true"
+        >
+          {
+            wires.map((w, i) => (
+              <>
+                <path d={w.d} class="wire" fill="none" stroke-width="2" />
+                <path
+                  d={w.d}
+                  class="packet"
+                  fill="none"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  pathLength="100"
+                  style={`--d:${i * 1.2}s`}
+                />
+                <circle cx={w.x1} cy={w.y1} r="3" class="port" />
+                <circle cx={w.x2} cy={w.y2} r="3" class="port" />
+              </>
+            ))
+          }
+        </svg>
+
+        {
+          nodes.map((n, i) => (
+            <div
+              class="node"
+              style={`left:${pct(n.x, W)};top:${pct(n.y, H)};width:${pct(NW, W)};height:${pct(NH, H)};--d:${i * 1.2}s`}
+            >
+              <span class="node-icon">
+                <Icon name={n.icon} class="h-4 w-4" />
+              </span>
+              <span class="min-w-0 leading-tight">
+                <span class="block truncate text-[12px] font-medium text-slate-800">
+                  {n.label}
+                </span>
+                <span class="block truncate text-[10px] text-slate-500">
+                  {n.sub}
+                </span>
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 text-center">
+      {
+        stats.map((s) => (
+          <div>
+            <p
+              data-metric={s.key}
+              class="text-2xl font-semibold tabular-nums text-[#ff6d5a]"
+            >
+              —
+            </p>
+            <p class="text-xs text-slate-500">{s.label}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p data-caption class="mt-3 min-h-4 text-center text-[11px] text-slate-400">
+    </p>
+  </div>
+</div>
+
+<style>
+  /* n8n coral. This one line drives the packet, node glow, icon chips and background glow */
+  .canvas-glow,
+  [data-pipeline] {
+    --flow: 255 109 90;
+  }
+
+  /* Light canvas: faint dark dot grid, fading toward the edges */
+  .canvas-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(
+      rgb(15 23 42 / 0.14) 1px,
+      transparent 1.5px
+    );
+    background-size: 18px 18px;
+    -webkit-mask-image: radial-gradient(
+      ellipse 80% 70% at 50% 45%,
+      #000 30%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 80% 70% at 50% 45%,
+      #000 30%,
+      transparent 100%
+    );
+    animation: drift 24s linear infinite;
+  }
+  .canvas-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      60% 45% at 50% 42%,
+      rgb(var(--flow) / 0.1),
+      transparent 70%
+    );
+    animation: breathe 6s ease-in-out infinite;
+  }
+
+  /* Wires, ports and the travelling packet */
+  .wire {
+    stroke: rgb(100 116 139 / 0.4);
+  }
+  .port {
+    fill: #fff;
+    stroke: rgb(100 116 139 / 0.6);
+    stroke-width: 1.5;
+  }
+  .packet {
+    stroke: rgb(var(--flow));
+    stroke-dasharray: 10 200;
+    filter: drop-shadow(0 0 3px rgb(var(--flow) / 0.7));
+    animation: travel 3.6s linear var(--d) infinite backwards;
+  }
+
+  /* White n8n-style node cards */
+  .node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(15 23 42 / 0.12);
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    animation: node-glow 3.6s ease-in-out var(--d) infinite backwards;
+  }
+  .node-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.5rem;
+    background: rgb(var(--flow) / 0.12);
+    color: rgb(var(--flow));
+  }
+
+  @keyframes drift {
+    to {
+      background-position: 18px 18px;
+    }
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes travel {
+    0% {
+      stroke-dashoffset: 10;
+    }
+    33% {
+      stroke-dashoffset: -110;
+    }
+    100% {
+      stroke-dashoffset: -110;
+    }
+  }
+  @keyframes node-glow {
+    0%,
+    30%,
+    100% {
+      border-color: rgb(15 23 42 / 0.12);
+      box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+    }
+    8%,
+    18% {
+      border-color: rgb(var(--flow) / 0.8);
+      box-shadow: 0 0 16px rgb(var(--flow) / 0.35);
+    }
+  }
+
+  /* Offline: stop the flow and dim the nodes */
+  [data-state="offline"] .packet {
+    display: none;
+  }
+  [data-state="offline"] .node {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .canvas-dots,
+    .canvas-glow,
+    .node {
+      animation: none;
+    }
+    .packet {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fmtLatency = (ms: number) =>
+    ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+
+  function countUp(el: HTMLElement, to: number, format: (n: number) => string) {
+    if (reduce || to === 0) {
+      el.textContent = format(to);
+      return;
+    }
+    const start = performance.now();
+    const step = (t: number) => {
+      const p = Math.min(1, (t - start) / 700);
+      el.textContent = format(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-pipeline]").forEach((root) => {
+    const label = root.querySelector<HTMLElement>("[data-status-label]")!;
+    const caption = root.querySelector<HTMLElement>("[data-caption]")!;
+    const metric = (key: string) =>
+      root.querySelector<HTMLElement>(`[data-metric="${key}"]`)!;
+    let firstPaint = true;
+
+    const setStatus = (online: boolean) => {
+      root.dataset.state = online ? "online" : "offline";
+      label.textContent = online ? "Online" : "Offline";
+    };
+
+    const loadHealth = async () => {
+      try {
+        const res = await fetch("/api/health");
+        const data = (await res.json()) as { status?: string };
+        setStatus(data.status === "online");
+      } catch {
+        setStatus(false);
+      }
+    };
+
+    const show = (
+      key: string,
+      value: number | null | undefined,
+      format: (n: number) => string,
+    ) => {
+      const el = metric(key);
+      if (value == null) {
+        el.textContent = "—";
+        return;
+      }
+      if (firstPaint) countUp(el, value, format);
+      else el.textContent = format(value);
+    };
+
+    const loadMetrics = async () => {
+      try {
+        const res = await fetch("/api/metrics");
+        if (!res.ok) throw new Error("unavailable");
+        type Metrics = {
+          runs?: number | null;
+          success_rate?: number | null;
+          avg_latency_ms?: number | null;
+          since?: string | null;
+        };
+        const d = (await res.json()) as Metrics;
+        show("runs", d.runs, (n) => Math.round(n).toLocaleString("en-US"));
+        show("success", d.success_rate, (n) => `${n.toFixed(1)}%`);
+        show("latency", d.avg_latency_ms, (n) => fmtLatency(Math.round(n)));
+        caption.textContent = d.since
+          ? `since ${new Date(d.since).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+          : "";
+        firstPaint = false;
+      } catch {
+        caption.textContent = "metrics unavailable";
+      }
+    };
+
+    loadHealth();
+    loadMetrics();
+    setInterval(() => {
+      if (!document.hidden) {
+        loadHealth();
+        loadMetrics();
+      }
+    }, 60000);
+  });
+</script>

@@ -1,0 +1,27 @@
+---
+import '../../styles/global.css';
+interface Props { title: string; description: string; image?: string }
+const { title, description, image = '/og/default.png' } = Astro.props;
+const umamiUrl = import.meta.env.PUBLIC_UMAMI_URL;
+const umamiId = import.meta.env.PUBLIC_UMAMI_ID;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://genmarkangus.dev');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0B0F17" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {umamiUrl && umamiId && <script defer src={`${umamiUrl}/script.js`} data-website-id={umamiId}></script>}
+  </head>
+  <body class="min-h-screen bg-obsidian antialiased">
+    <slot />
+  </body>
+</html>
